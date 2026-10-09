@@ -1,0 +1,281 @@
+{
+  "info": {
+    "name": "Dispatch Window Reservation API",
+    "_postman_id": "dispatch-api-wmrt-v1",
+    "description": "Colección de endpoints para el sistema de reserva de ventanas de despacho.\n\n**Flujo típico:**\n1. GET /zones → obtener zonas disponibles\n2. GET /availability/zones/{zoneId}/dates → ver fechas con capacidad\n3. GET /availability/zones/{zoneId}/blocks?date= → ver bloques horarios\n4. POST /reservations → crear reserva\n5. DELETE /reservations/{id} → cancelar si es necesario",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "today",
+      "value": "2026-10-10",
+      "type": "string",
+      "description": "Actualiza esta fecha según el día actual"
+    }
+  ],
+  "item": [
+    {
+      "name": "Zones",
+      "description": "Gestión de zonas geográficas de despacho",
+      "item": [
+        {
+          "name": "GET Listar todas las zonas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/zones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "zones"]
+            },
+            "description": "Retorna todas las zonas geográficas disponibles con su cobertura."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Zona por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/zones/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "zones", "2"]
+            },
+            "description": "Retorna una zona específica por su ID. Retorna 404 si no existe."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Availability",
+      "description": "Consulta de disponibilidad: fechas y bloques horarios",
+      "item": [
+        {
+          "name": "GET Fechas disponibles (zona 2, default 30 días)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/availability/zones/2/dates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "availability", "zones", "2", "dates"]
+            },
+            "description": "Retorna fechas con al menos un bloque disponible en los próximos 30 días (default)."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Fechas disponibles (zona 2, rango explícito)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/availability/zones/2/dates?from={{today}}&to=2026-10-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "availability", "zones", "2", "dates"],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "{{today}}"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-10-31"
+                }
+              ]
+            },
+            "description": "Retorna fechas disponibles en el rango indicado. Fechas en formato YYYY-MM-DD."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Bloques horarios (zona 2, fecha de hoy)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/availability/zones/2/blocks?date={{today}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "availability", "zones", "2", "blocks"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "{{today}}"
+                }
+              ]
+            },
+            "description": "Retorna los bloques horarios (con costo y slots disponibles) para una zona y fecha específica."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Bloque por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/availability/blocks/5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "availability", "blocks", "5"]
+            },
+            "description": "Retorna el detalle de un bloque horario específico. Retorna 404 si no existe."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reservations",
+      "description": "Creación, consulta y cancelación de reservas",
+      "item": [
+        {
+          "name": "POST Crear reserva",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"ORD-001\",\n  \"timeBlockId\": 6,\n  \"customerName\": \"Juan Pérez\",\n  \"address\": \"Av. Providencia 1234, Providencia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reservations"]
+            },
+            "description": "Crea una nueva reserva. Retorna 201 si es exitosa.\n\n- **409 Conflict** si el `orderId` ya tiene una reserva\n- **409 Conflict** si el bloque no tiene capacidad\n- **404 Not Found** si el `timeBlockId` no existe\n- **400 Bad Request** si faltan campos obligatorios"
+          },
+          "response": []
+        },
+        {
+          "name": "POST Crear reserva (orden duplicada → 409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"ORD-001\",\n  \"timeBlockId\": 6,\n  \"customerName\": \"Juan Pérez\",\n  \"address\": \"Av. Providencia 1234, Providencia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reservations"]
+            },
+            "description": "Enviar esta misma request dos veces para ver el 409 por orden duplicada."
+          },
+          "response": []
+        },
+        {
+          "name": "POST Crear reserva (campos vacíos → 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"\",\n  \"timeBlockId\": null,\n  \"customerName\": \"\",\n  \"address\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reservations"]
+            },
+            "description": "Demuestra la validación de campos: retorna 400 con detalle de errores por campo."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Listar todas las reservas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reservations"]
+            },
+            "description": "Retorna todas las reservas registradas (CONFIRMED y CANCELLED)."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Reserva por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reservations", "1"]
+            },
+            "description": "Retorna el detalle de una reserva por su ID. Retorna 404 si no existe."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Reserva por orderId",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations/order/ORD-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reservations", "order", "ORD-001"]
+            },
+            "description": "Busca una reserva por el ID de orden del cliente. Retorna 404 si no existe."
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Cancelar reserva",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reservations/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reservations", "1"]
+            },
+            "description": "Cancela una reserva CONFIRMED. Libera el slot automáticamente.\n\n- **200 OK** con la reserva actualizada (`status: CANCELLED`)\n- **409 Conflict** si ya estaba cancelada\n- **404 Not Found** si no existe"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
