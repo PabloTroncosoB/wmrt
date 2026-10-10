@@ -23,6 +23,26 @@ API REST para la reserva de ventanas de despacho (dispatch windows) para órdene
 
 ---
 
+## Seguridad (API Key Authentication)
+
+La API cuenta con una capa de seguridad basada en el header HTTP `X-API-KEY`:
+
+- **Header requerido:** `X-API-KEY: wmrt-secret-api-key-2026`
+- **Rutas protegidas:** Todas las rutas bajo `/api/**`
+- **Respuesta ante error de autenticación:** `401 Unauthorized` con formato JSON estándar:
+  ```json
+  {
+    "timestamp": "2026-10-09T23:30:00Z",
+    "status": 401,
+    "error": "Unauthorized",
+    "message": "Invalid or missing API Key. Please provide a valid header: X-API-KEY",
+    "path": "/api/v1/zones"
+  }
+  ```
+- **Deshabilitar seguridad para pruebas locales:** Puedes deshabilitarla configurando `SECURITY_API_KEY_ENABLED=false` en el `.env` o en `application.properties`.
+
+---
+
 ## Configuración de entorno
 
 El proyecto incluye un archivo `.env.example` con todas las variables disponibles. Copia y ajusta los valores:
@@ -76,6 +96,8 @@ mvn spring-boot:run
 
 ## Endpoints disponibles
 
+> Todos los endpoints requieren el header `X-API-KEY: wmrt-secret-api-key-2026`.
+
 | Método   | Path                                              | Descripción                                          |
 |----------|---------------------------------------------------|------------------------------------------------------|
 | `GET`    | `/api/v1/zones`                                   | Lista todas las zonas de despacho                    |
@@ -93,49 +115,42 @@ mvn spring-boot:run
 
 ## Ejemplos de uso (curl)
 
-### Listar todas las zonas
+### 1. Intento sin API Key (retorna 401 Unauthorized)
 
 ```bash
-curl http://localhost:8080/api/v1/zones
+curl -i http://localhost:8080/api/v1/zones
 ```
 
-### Ver fechas disponibles para una zona
+### 2. Listar todas las zonas (con API Key)
+
+```bash
+curl -H "X-API-KEY: wmrt-secret-api-key-2026" http://localhost:8080/api/v1/zones
+```
+
+### 3. Ver fechas disponibles para una zona
 
 ```bash
 # Zona 2 (Centro), próximos 30 días (default)
-curl "http://localhost:8080/api/v1/availability/zones/2/dates"
+curl -H "X-API-KEY: wmrt-secret-api-key-2026" \
+  "http://localhost:8080/api/v1/availability/zones/2/dates"
 
 # Con rango explícito
-curl "http://localhost:8080/api/v1/availability/zones/2/dates?from=2026-10-10&to=2026-10-24"
+curl -H "X-API-KEY: wmrt-secret-api-key-2026" \
+  "http://localhost:8080/api/v1/availability/zones/2/dates?from=2026-10-10&to=2026-10-24"
 ```
 
-### Ver bloques de tiempo disponibles para una zona y fecha
+### 4. Ver bloques de tiempo disponibles para una zona y fecha
 
 ```bash
-curl "http://localhost:8080/api/v1/availability/zones/2/blocks?date=2026-10-13"
+curl -H "X-API-KEY: wmrt-secret-api-key-2026" \
+  "http://localhost:8080/api/v1/availability/zones/2/blocks?date=2026-10-13"
 ```
 
-**Respuesta de ejemplo:**
-```json
-[
-  {
-    "id": 5,
-    "date": "2026-10-13",
-    "startTime": "09:00",
-    "endTime": "12:00",
-    "cost": 5990.0,
-    "availableSlots": 10,
-    "zoneId": 2,
-    "zoneName": "Centro",
-    "full": false
-  }
-]
-```
-
-### Crear una reserva
+### 5. Crear una reserva
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/reservations \
+  -H "X-API-KEY: wmrt-secret-api-key-2026" \
   -H "Content-Type: application/json" \
   -d '{
     "orderId": "ORD-001",
@@ -159,25 +174,19 @@ curl -X POST http://localhost:8080/api/v1/reservations \
 }
 ```
 
-### Obtener una reserva por ID
+### 6. Obtener una reserva por ID
 
 ```bash
-curl http://localhost:8080/api/v1/reservations/1
+curl -H "X-API-KEY: wmrt-secret-api-key-2026" \
+  http://localhost:8080/api/v1/reservations/1
 ```
 
-### Obtener una reserva por orderId
+### 7. Cancelar una reserva
 
 ```bash
-curl http://localhost:8080/api/v1/reservations/order/ORD-001
+curl -X DELETE -H "X-API-KEY: wmrt-secret-api-key-2026" \
+  http://localhost:8080/api/v1/reservations/1
 ```
-
-### Cancelar una reserva
-
-```bash
-curl -X DELETE http://localhost:8080/api/v1/reservations/1
-```
-
-**Respuesta:** `200 OK` con el cuerpo de la reserva actualizado (`status: "CANCELLED"`).
 
 ---
 
@@ -192,53 +201,9 @@ curl -X DELETE http://localhost:8080/api/v1/reservations/1
 
 ---
 
-## Estructura del proyecto
+## Importar en Postman
 
-```
-wmrt/
-├── pom.xml
-├── .env                            ← Variables de entorno locales (ignorado por git)
-├── .env.example                    ← Plantilla de variables (incluido en git)
-├── dispatch.db                     ← Creado automáticamente al arrancar
-├── README.md
-├── personal.md
-└── src/
-    └── main/
-        ├── java/com/wmrt/dispatch/
-        │   ├── DispatchApplication.java
-        │   ├── config/
-        │   │   ├── DatabaseConfig.java  ← WAL mode + foreign keys
-        │   │   └── DataSeeder.java      ← Seed de bloques de tiempo
-        │   ├── model/
-        │   │   ├── Zone.java
-        │   │   ├── TimeBlock.java
-        │   │   ├── Reservation.java
-        │   │   └── ReservationStatus.java
-        │   ├── dto/
-        │   │   ├── AvailableDateResponse.java
-        │   │   ├── TimeBlockResponse.java
-        │   │   ├── ReservationRequest.java
-        │   │   ├── ReservationResponse.java
-        │   │   └── ErrorResponse.java
-        │   ├── repository/
-        │   │   ├── ZoneRepository.java
-        │   │   ├── TimeBlockRepository.java
-        │   │   └── ReservationRepository.java
-        │   ├── service/
-        │   │   ├── ZoneService.java
-        │   │   ├── AvailabilityService.java
-        │   │   └── ReservationService.java
-        │   ├── controller/
-        │   │   ├── ZoneController.java
-        │   │   ├── AvailabilityController.java
-        │   │   └── ReservationController.java
-        │   └── exception/
-        │       ├── GlobalExceptionHandler.java
-        │       ├── ZoneNotFoundException.java
-        │       ├── TimeBlockNotFoundException.java
-        │       ├── NoCapacityException.java
-        │       └── ReservationNotFoundException.java
-        └── resources/
-            ├── application.properties
-            └── schema.sql
-```
+1. Abre Postman
+2. Clic en **Import**
+3. Selecciona el archivo `dispatch-api.postman_collection.json` de la raíz del proyecto
+4. La colección ya incluye la autenticación con `X-API-KEY` configurada a nivel global mediante la variable `{{apiKey}}`.
