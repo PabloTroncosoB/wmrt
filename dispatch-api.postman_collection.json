@@ -2,14 +2,40 @@
   "info": {
     "name": "Dispatch Window Reservation API",
     "_postman_id": "dispatch-api-wmrt-v1",
-    "description": "Colección de endpoints para el sistema de reserva de ventanas de despacho.\n\n**Flujo típico:**\n1. GET /zones → obtener zonas disponibles\n2. GET /availability/zones/{zoneId}/dates → ver fechas con capacidad\n3. GET /availability/zones/{zoneId}/blocks?date= → ver bloques horarios\n4. POST /reservations → crear reserva\n5. DELETE /reservations/{id} → cancelar si es necesario",
+    "description": "Colección de endpoints para el sistema de reserva de ventanas de despacho.\n\n**Autenticación:**\nTodas las rutas `/api/**` requieren el header `X-API-KEY`. Esta colección lo tiene configurado a nivel global en Authorization.\n\n**Flujo típico:**\n1. GET /zones → obtener zonas disponibles\n2. GET /availability/zones/{zoneId}/dates → ver fechas con capacidad\n3. GET /availability/zones/{zoneId}/blocks?date= → ver bloques horarios\n4. POST /reservations → crear reserva\n5. DELETE /reservations/{id} → cancelar si es necesario",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-API-KEY",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
   },
   "variable": [
     {
       "key": "baseUrl",
       "value": "http://localhost:8080",
       "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "wmrt-secret-api-key-2026",
+      "type": "string",
+      "description": "API Key configurada en .env o application.properties"
     },
     {
       "key": "today",
@@ -34,6 +60,23 @@
               "path": ["api", "v1", "zones"]
             },
             "description": "Retorna todas las zonas geográficas disponibles con su cobertura."
+          },
+          "response": []
+        },
+        {
+          "name": "GET Listar zonas (Sin API Key → 401)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/zones",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "zones"]
+            },
+            "description": "Demuestra la capa de seguridad: sin el header X-API-KEY retorna 401 Unauthorized."
           },
           "response": []
         },
