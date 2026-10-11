@@ -29,7 +29,7 @@ public class DataSeeder implements ApplicationRunner {
     };
 
     private static final int CAPACITY = 10;
-    private static final long[] ZONE_IDS = {1L, 2L, 3L, 4L};
+    private static final long[] ZONE_IDS = {1L, 2L, 3L, 4L, 5L};
 
     private final TimeBlockRepository timeBlockRepository;
 

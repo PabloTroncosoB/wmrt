@@ -43,7 +43,7 @@ class AvailabilityServiceTest {
 
     @BeforeEach
     void setUp() {
-        zoneCentro = new Zone(2L, "Centro", "RM Centro", "Santiago, Providencia");
+        zoneCentro = new Zone(2L, "Metropolitana Centro", "RM Centro", "Santiago, Providencia");
 
         blockAvailable = new TimeBlock(5L, 2L, LocalDate.of(2026, 10, 13),
                 "09:00", "12:00", 10, 3, 5990.0);  // 7 slots left

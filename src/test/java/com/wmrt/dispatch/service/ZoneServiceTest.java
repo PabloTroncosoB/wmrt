@@ -32,8 +32,8 @@ class ZoneServiceTest {
 
     @BeforeEach
     void setUp() {
-        zoneNorte  = new Zone(1L, "Norte",  "RM Norte",  "Huechuraba, Quilicura");
-        zoneCentro = new Zone(2L, "Centro", "RM Centro", "Santiago, Providencia");
+        zoneNorte  = new Zone(1L, "Metropolitana Norte",  "RM Norte",  "Huechuraba, Quilicura");
+        zoneCentro = new Zone(2L, "Metropolitana Centro", "RM Centro", "Santiago, Providencia");
     }
 
     // ── getAllZones() ─────────────────────────────────────────────────────────

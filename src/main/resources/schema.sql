@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS reservations (
 
 -- Seed zones (INSERT OR IGNORE uses id uniqueness to avoid duplicates)
 INSERT OR IGNORE INTO zones (id, name, region, coverage_description) VALUES
-  (1, 'Norte', 'RM Norte', 'Comunas: Huechuraba, Quilicura, Recoleta, Independencia'),
-  (2, 'Centro', 'RM Centro', 'Comunas: Santiago, Providencia, Nunoa, Macul'),
-  (3, 'Sur', 'RM Sur', 'Comunas: La Florida, Puente Alto, San Bernardo, Buin'),
-  (4, 'Oriente', 'RM Oriente', 'Comunas: Las Condes, Vitacura, Lo Barnechea, La Reina');
+  (1, 'Metropolitana Norte', 'RM Norte', 'Comunas: Huechuraba, Quilicura, Recoleta, Independencia'),
+  (2, 'Metropolitana Centro', 'RM Centro', 'Comunas: Santiago, Providencia, Nunoa, Macul'),
+  (3, 'Metropolitana Sur', 'RM Sur', 'Comunas: La Florida, Puente Alto, San Bernardo, Buin'),
+  (4, 'Metropolitana Oriente', 'RM Oriente', 'Comunas: Las Condes, Vitacura, Lo Barnechea, La Reina'),
+  (5, 'Los Ríos', 'Lor Ríos', 'Comunas: Lanco, Panguipulli, Valdivia, San José, Máfil');
