@@ -43,6 +43,13 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, "Reservation Not Found", ex.getMessage(), request.getRequestURI());
     }
 
+    @ExceptionHandler(PastTimeBlockException.class)
+    public ResponseEntity<ErrorResponse> handlePastTimeBlock(PastTimeBlockException ex,
+                                                             HttpServletRequest request) {
+        log.debug("PastTimeBlockException: {}", ex.getMessage());
+        return buildResponse(HttpStatus.CONFLICT, "Past Time Block", ex.getMessage(), request.getRequestURI());
+    }
+
     @ExceptionHandler(NoCapacityException.class)
     public ResponseEntity<ErrorResponse> handleNoCapacity(NoCapacityException ex,
                                                           HttpServletRequest request) {

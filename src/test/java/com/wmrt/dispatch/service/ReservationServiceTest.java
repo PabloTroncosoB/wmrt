@@ -4,6 +4,7 @@ import com.wmrt.dispatch.dto.ReservationRequest;
 import com.wmrt.dispatch.dto.ReservationResponse;
 import com.wmrt.dispatch.dto.TimeBlockResponse;
 import com.wmrt.dispatch.exception.NoCapacityException;
+import com.wmrt.dispatch.exception.PastTimeBlockException;
 import com.wmrt.dispatch.exception.ReservationNotFoundException;
 import com.wmrt.dispatch.model.Reservation;
 import com.wmrt.dispatch.model.ReservationStatus;
@@ -56,10 +57,12 @@ class ReservationServiceTest {
 
     @BeforeEach
     void setUp() {
-        availableBlock = new TimeBlock(5L, 2L, LocalDate.of(2026, 10, 13),
+        LocalDate futureDate = LocalDate.now().plusDays(2);
+
+        availableBlock = new TimeBlock(5L, 2L, futureDate,
                 "09:00", "12:00", 10, 3, 5990.0);
 
-        fullBlock = new TimeBlock(6L, 2L, LocalDate.of(2026, 10, 13),
+        fullBlock = new TimeBlock(6L, 2L, futureDate,
                 "12:00", "14:00", 10, 10, 4990.0);
 
         confirmedReservation = new Reservation(
@@ -70,7 +73,7 @@ class ReservationServiceTest {
         );
 
         blockDto = new TimeBlockResponse(
-                5L, LocalDate.of(2026, 10, 13),
+                5L, futureDate,
                 "09:00", "12:00", 5990.0, 7, 2L, "Centro", false
         );
 
@@ -114,6 +117,23 @@ class ReservationServiceTest {
 
         assertTrue(ex.getMessage().contains("ORD-001"));
         verify(timeBlockRepository, never()).findByIdForUpdate(any());
+        verify(reservationRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("createReservation() throws PastTimeBlockException when time block is in the past")
+    void createReservation_throwsWhenBlockIsInThePast() {
+        TimeBlock pastBlock = new TimeBlock(7L, 2L, LocalDate.now().minusDays(1),
+                "09:00", "12:00", 10, 0, 5990.0);
+
+        when(reservationRepository.existsByOrderId("ORD-001")).thenReturn(false);
+        when(timeBlockRepository.findByIdForUpdate(5L)).thenReturn(Optional.of(pastBlock));
+
+        PastTimeBlockException ex = assertThrows(PastTimeBlockException.class,
+                () -> reservationService.createReservation(request));
+
+        assertTrue(ex.getMessage().contains("Cannot reserve a time block in the past"));
+        verify(timeBlockRepository, never()).incrementReservedCount(any());
         verify(reservationRepository, never()).save(any());
     }
 
@@ -263,7 +283,7 @@ class ReservationServiceTest {
                 () -> reservationService.getReservationByOrderId("ORD-XXX"));
     }
 
-    // ── getAllReservations() ───────────────────────────────────────────────────
+    // ── getAllReservations() ──────────────────────────────────────────────────
 
     @Test
     @DisplayName("getAllReservations() returns list of responses for all reservations")

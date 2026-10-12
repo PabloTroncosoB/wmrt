@@ -4,6 +4,7 @@ import com.wmrt.dispatch.dto.ReservationRequest;
 import com.wmrt.dispatch.dto.ReservationResponse;
 import com.wmrt.dispatch.dto.TimeBlockResponse;
 import com.wmrt.dispatch.exception.NoCapacityException;
+import com.wmrt.dispatch.exception.PastTimeBlockException;
 import com.wmrt.dispatch.exception.ReservationNotFoundException;
 import com.wmrt.dispatch.model.Reservation;
 import com.wmrt.dispatch.model.ReservationStatus;
@@ -50,8 +51,8 @@ public class ReservationService {
      * <p>
      * Steps:
      * 1. Check that the orderId has no existing reservation (idempotency guard).
-     * 2. Inside a synchronized block: re-fetch the time block and verify capacity,
-     *    increment reserved_count, then persist the reservation.
+     * 2. Inside a synchronized block: re-fetch the time block, verify it is not in the past,
+     *    verify capacity, increment reserved_count, then persist the reservation.
      * </p>
      */
     public ReservationResponse createReservation(ReservationRequest req) {
@@ -68,6 +69,12 @@ public class ReservationService {
                     .orElseThrow(() -> new NoCapacityException(
                             "Time block not found with id: " + req.getTimeBlockId()));
 
+            LocalDateTime now = LocalDateTime.now();
+            if (block.isPast(now)) {
+                throw new PastTimeBlockException(
+                        "Cannot reserve a time block in the past: " + block.getAvailableDate() + " " + block.getStartTime());
+            }
+
             if (block.isFull()) {
                 throw new NoCapacityException(
                         "Time block " + req.getTimeBlockId() + " has no available capacity");
@@ -82,7 +89,7 @@ public class ReservationService {
                     req.getCustomerName(),
                     req.getAddress(),
                     ReservationStatus.CONFIRMED,
-                    LocalDateTime.now()
+                    now
             );
             saved = reservationRepository.save(reservation);
         }

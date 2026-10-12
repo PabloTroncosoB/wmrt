@@ -71,7 +71,7 @@ class AvailabilityServiceTest {
         assertEquals(date, result.get(0).getDate());
         assertEquals(1, result.get(0).getAvailableBlockCount()); // only blockAvailable is non-full
         assertEquals(2L, result.get(0).getZoneId());
-        assertEquals("Centro", result.get(0).getZoneName());
+        assertEquals("Metropolitana Centro", result.get(0).getZoneName());
     }
 
     @Test
@@ -177,7 +177,7 @@ class AvailabilityServiceTest {
 
         assertEquals(5L,       result.getId());
         assertEquals("09:00",  result.getStartTime());
-        assertEquals("Centro", result.getZoneName());
+        assertEquals("Metropolitana Centro", result.getZoneName());
         assertEquals(7,        result.getAvailableSlots());
     }
 
@@ -199,7 +199,7 @@ class AvailabilityServiceTest {
     @Test
     @DisplayName("toTimeBlockResponse() correctly maps all fields")
     void toTimeBlockResponse_mapsAllFields() {
-        TimeBlockResponse dto = availabilityService.toTimeBlockResponse(blockAvailable, "Centro");
+        TimeBlockResponse dto = availabilityService.toTimeBlockResponse(blockAvailable, "Metropolitana Centro");
 
         assertEquals(5L,                               dto.getId());
         assertEquals(LocalDate.of(2026, 10, 13),       dto.getDate());
@@ -208,7 +208,7 @@ class AvailabilityServiceTest {
         assertEquals(5990.0,                           dto.getCost());
         assertEquals(7,                                dto.getAvailableSlots());
         assertEquals(2L,                               dto.getZoneId());
-        assertEquals("Centro",                         dto.getZoneName());
+        assertEquals("Metropolitana Centro",           dto.getZoneName());
         assertFalse(dto.isFull());
     }
 }

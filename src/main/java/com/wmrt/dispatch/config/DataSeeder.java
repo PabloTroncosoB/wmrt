@@ -11,7 +11,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 /**
- * Seeds time_blocks for all 4 zones for the next 14 weekdays (Monday-Friday) on startup.
+ * Seeds time_blocks for all 5 zones for the next 14 weekdays (Monday-Friday) on startup.
  * Each weekday gets 4 dispatch windows with preset capacity and cost.
  * Uses a count-check guard to avoid re-inserting already existing blocks (idempotent).
  */

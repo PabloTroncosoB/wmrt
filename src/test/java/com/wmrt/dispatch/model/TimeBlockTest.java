@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,11 +46,11 @@ class TimeBlockTest {
         assertEquals(10, block(10, 0).availableSlots());
     }
 
-    // ── isFull() ─────────────────────────────────────────────────────────────
+    // ── isFull() ──────────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("isFull() returns false when slots remain")
-    void isFull_falseWhenSlotsRemain() {
+    void profile_isFull_falseWhenSlotsRemain() {
         assertFalse(block(10, 9).isFull());
     }
 
@@ -69,5 +70,31 @@ class TimeBlockTest {
     @DisplayName("isFull() returns false when block is empty")
     void isFull_falseWhenEmpty() {
         assertFalse(block(10, 0).isFull());
+    }
+
+    // ── isPast() ──────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("isPast() returns true when time block date is before current date")
+    void isPast_trueWhenDateBefore() {
+        TimeBlock past = new TimeBlock(1L, 2L, LocalDate.of(2026, 10, 10), "09:00", "12:00", 10, 0, 5990.0);
+        LocalDateTime now = LocalDateTime.of(2026, 10, 12, 10, 0);
+        assertTrue(past.isPast(now));
+    }
+
+    @Test
+    @DisplayName("isPast() returns true when same day but start time is before current time")
+    void isPast_trueWhenSameDayTimePassed() {
+        TimeBlock todayMorning = new TimeBlock(1L, 2L, LocalDate.of(2026, 10, 12), "09:00", "12:00", 10, 0, 5990.0);
+        LocalDateTime now = LocalDateTime.of(2026, 10, 12, 11, 0);
+        assertTrue(todayMorning.isPast(now));
+    }
+
+    @Test
+    @DisplayName("isPast() returns false when time block is in the future")
+    void isPast_falseWhenInFuture() {
+        TimeBlock future = new TimeBlock(1L, 2L, LocalDate.of(2026, 10, 13), "09:00", "12:00", 10, 0, 5990.0);
+        LocalDateTime now = LocalDateTime.of(2026, 10, 12, 10, 0);
+        assertFalse(future.isPast(now));
     }
 }

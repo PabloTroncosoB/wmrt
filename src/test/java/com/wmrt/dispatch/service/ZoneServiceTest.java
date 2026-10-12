@@ -46,8 +46,8 @@ class ZoneServiceTest {
         List<Zone> result = zoneService.getAllZones();
 
         assertEquals(2, result.size());
-        assertEquals("Norte",  result.get(0).getName());
-        assertEquals("Centro", result.get(1).getName());
+        assertEquals("Metropolitana Norte",  result.get(0).getName());
+        assertEquals("Metropolitana Centro", result.get(1).getName());
         verify(zoneRepository).findAll();
     }
 
@@ -59,6 +59,7 @@ class ZoneServiceTest {
         List<Zone> result = zoneService.getAllZones();
 
         assertTrue(result.isEmpty());
+        verify(zoneRepository).findAll();
     }
 
     // ── getZoneById() ─────────────────────────────────────────────────────────
@@ -71,7 +72,7 @@ class ZoneServiceTest {
         Zone result = zoneService.getZoneById(1L);
 
         assertEquals(1L,      result.getId());
-        assertEquals("Norte", result.getName());
+        assertEquals("Metropolitana Norte", result.getName());
         verify(zoneRepository).findById(1L);
     }
 

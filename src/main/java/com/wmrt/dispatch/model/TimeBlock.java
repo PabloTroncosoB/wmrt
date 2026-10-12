@@ -1,6 +1,8 @@
 package com.wmrt.dispatch.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /**
  * Represents a time block (ventana de despacho) for a given zone and date.
@@ -43,6 +45,17 @@ public class TimeBlock {
      */
     public boolean isFull() {
         return reservedCount >= capacity;
+    }
+
+    /**
+     * Returns true if the start of this time block is before the given timestamp.
+     */
+    public boolean isPast(LocalDateTime currentDateTime) {
+        if (availableDate == null || startTime == null) {
+            return false;
+        }
+        LocalDateTime blockStart = availableDate.atTime(LocalTime.parse(startTime));
+        return blockStart.isBefore(currentDateTime);
     }
 
     public Long getId() { return id; }
